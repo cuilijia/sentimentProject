@@ -6,7 +6,7 @@ import numpy as np
 from sklearn.model_selection import train_test_split
 
 sentenceLen = 300
-
+trainsize=40000
 Sg=0
 Size=250
 Window=5
@@ -56,7 +56,8 @@ def trainW2V(sentences, Sg, Size, Window, Min_count, Workers, Iter):
 
 def train(xtrainsent,ytrainsent):
     model = tf.keras.models.Sequential()
-    model.add(tf.keras.layers.LSTM(BatchSize, input_shape=(xtrainsent.shape[1], xtrainsent.shape[2])))
+    model.add(tf.keras.layers.Bidirectional(
+        tf.keras.layers.LSTM(BatchSize, input_shape=(xtrainsent.shape[1], xtrainsent.shape[2]))))
     # model.add(tf.keras.layers.Dropout(0.5))
     # model.add(tf.keras.layers.Dense(3, activation='softmax')) # Dense=>全连接层,输出维度=3
     # model.add(tf.keras.layers.Activation('softmax'))
@@ -99,7 +100,7 @@ def splitdata(Data):
 print("数据读入:")
 readData = pd.read_csv('sentimentProject/sentiment140/train16.csv', sep=',')
 # Data=Data.head(7000)+Data.tail(7000)
-Data=pd.concat([readData.head(20000),readData.tail(20000)])
+Data=pd.concat([readData.head(trainsize/2),readData.tail(trainsize/2)])
 print(Data.__len__())
 
 sentenceLen = getsentenceLen(Data["text"])
@@ -111,7 +112,12 @@ print("Word2vecTrain:")
 wvmodel = trainW2V(Data["text"], Sg, Size, Window, Min_count, Workers, Iter)
 
 print("Word2vecTransform:")
-Data["text"] = Data["text"].apply(lambda x: W2V(x,wvmodel))
+text1 = Data["text"].head(trainsize/2)
+text2 = Data["text"].tail(trainsize/2)
+text1 = text1.apply(lambda x: W2V(x,wvmodel))
+text2 = text2.apply(lambda x: W2V(x,wvmodel))
+
+Data=pd.concat([text1,text2])
 #
 Data["label"]=Data["label"].replace(0, 0)
 Data["label"]=Data["label"].replace(4, 1)
