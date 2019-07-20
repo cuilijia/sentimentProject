@@ -97,7 +97,7 @@ def splitdata(Data):
     return x_train,Y_train,x_test,Y_test
 
 print("数据读入:")
-readData = pd.read_csv('data/sentiment140/train16.csv', sep=',')
+readData = pd.read_csv('sentiment140/train16.csv', sep=',')
 # Data=Data.head(7000)+Data.tail(7000)
 Data=pd.concat([readData.head(2000),readData.tail(2000)])
 print(Data.__len__())
