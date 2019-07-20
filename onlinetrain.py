@@ -99,7 +99,7 @@ def splitdata(Data):
 print("数据读入:")
 readData = pd.read_csv('sentimentProject/sentiment140/train16.csv', sep=',')
 # Data=Data.head(7000)+Data.tail(7000)
-Data=pd.concat([readData.head(30000),readData.tail(30000)])
+Data=pd.concat([readData.head(20000),readData.tail(20000)])
 print(Data.__len__())
 
 sentenceLen = getsentenceLen(Data["text"])
@@ -107,10 +107,10 @@ sentenceLen = getsentenceLen(Data["text"])
 print("去除停用词:")
 Data["text"] = Data["text"].apply(lambda x: rmStopwords(x))
 
-# print(Data["label"])
-print("Word2vec:")
-wvmodel = trainW2V(Data["text"].head(20000), Sg, Size, Window, Min_count, Workers, Iter)
+print("Word2vecTrain:")
+wvmodel = trainW2V(Data["text"], Sg, Size, Window, Min_count, Workers, Iter)
 
+print("Word2vecTransform:")
 Data["text"] = Data["text"].apply(lambda x: W2V(x,wvmodel))
 #
 Data["label"]=Data["label"].replace(0, 0)
