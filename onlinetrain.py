@@ -116,8 +116,8 @@ print("Word2vecTrain:")
 wvmodel = trainW2V(Data["text"], Sg, Size, Window, Min_count, Workers, Iter)
 
 print("Word2vecTransform:")
-splitdt1 = readData.head(int(trainsize/2))
-splitdt2 = readData.tail(int(trainsize/2))
+splitdt1 = Data.head(int(trainsize/2))
+splitdt2 = Data.tail(int(trainsize/2))
 splitdt1["text"] = splitdt1["text"].apply(lambda x: W2V(x,wvmodel))
 splitdt2["text"] = splitdt2["text"].apply(lambda x: W2V(x,wvmodel))
 
