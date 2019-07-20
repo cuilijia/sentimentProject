@@ -111,7 +111,7 @@ Data["text"] = Data["text"].apply(lambda x: rmStopwords(x))
 print("Word2vec:")
 wvmodel = trainW2V(Data["text"], Sg, Size, Window, Min_count, Workers, Iter)
 
-Data["text"] = Data["text"].apply(lambda x: W2V(x,wvmodel))
+Data["text"] = Data["text"].head(20000).apply(lambda x: W2V(x,wvmodel))
 #
 Data["label"]=Data["label"].replace(0, 0)
 Data["label"]=Data["label"].replace(4, 1)
