@@ -99,7 +99,7 @@ def splitdata(Data):
 print("数据读入:")
 readData = pd.read_csv('sentimentProject/sentiment140/train16.csv', sep=',')
 # Data=Data.head(7000)+Data.tail(7000)
-Data=pd.concat([readData.head(30000),readData.tail(30000)])
+Data=pd.concat([readData.head(10000),readData.tail(10000)])
 print(Data.__len__())
 
 sentenceLen = getsentenceLen(Data["text"])
