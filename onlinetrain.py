@@ -6,7 +6,8 @@ import numpy as np
 from sklearn.model_selection import train_test_split
 
 sentenceLen = 300
-trainsize=40000
+totalsize=1600000
+trainsize=20000
 Sg=0
 Size=250
 Window=5
@@ -98,13 +99,14 @@ def splitdata(Data):
     return x_train,Y_train,x_test,Y_test
 
 print("数据读入:")
-readData = pd.read_csv('sentimentProject/sentiment140/train16.csv', sep=',')
-# Data=Data.head(7000)+Data.tail(7000)
-
-splitdt1 = readData.head(int(trainsize/2))
-splitdt2 = readData.tail(int(trainsize/2))
+Data = pd.read_csv('sentimentProject/sentiment140/train16.csv', sep=',')
+totalsize = Data.__len__()
+halfsize=int(trainsize/2)
+splitdt1 = Data[0:halfsize]
+splitdt2 = Data[totalsize-halfsize:totalsize]
 Data=pd.concat([splitdt1,splitdt2])
-# Data=pd.concat([readData.head(trainsize/2),readData.tail(trainsize/2)])
+splitdt1=[]
+splitdt2=[]
 print(Data.__len__())
 
 sentenceLen = getsentenceLen(Data["text"])
@@ -116,12 +118,14 @@ print("Word2vecTrain:")
 wvmodel = trainW2V(Data["text"], Sg, Size, Window, Min_count, Workers, Iter)
 
 print("Word2vecTransform:")
-splitdt1 = Data.head(int(trainsize/2))
-splitdt2 = Data.tail(int(trainsize/2))
+splitdt1 = Data[0:halfsize]
+splitdt2 = Data[halfsize:trainsize]
 splitdt1["text"] = splitdt1["text"].apply(lambda x: W2V(x,wvmodel))
 splitdt2["text"] = splitdt2["text"].apply(lambda x: W2V(x,wvmodel))
 
 Data=pd.concat([splitdt1,splitdt2])
+splitdt1=[]
+splitdt2=[]
 #
 Data["label"]=Data["label"].replace(0, 0)
 Data["label"]=Data["label"].replace(4, 1)
