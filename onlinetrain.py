@@ -7,7 +7,7 @@ from sklearn.model_selection import train_test_split
 
 sentenceLen = 300
 totalsize=1600000
-trainsize=60000
+trainsize=40000
 Sg=0
 Size=250
 Window=5
