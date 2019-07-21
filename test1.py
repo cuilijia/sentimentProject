@@ -5,8 +5,13 @@ import tensorflow as tf
 import numpy as np
 from sklearn.model_selection import train_test_split
 
-sentenceLen = 300
+from keras import backend as K
+from keras.engine import InputSpec
+from keras.layers import LSTM, activations, Wrapper
 
+sentenceLen = 300
+totalsize=1600000
+trainsize=5000
 Sg=0
 Size=250
 Window=5
@@ -54,18 +59,6 @@ def trainW2V(sentences, Sg, Size, Window, Min_count, Workers, Iter):
     model = Word2Vec(sentences, sg=Sg, size=Size, window=Window, min_count=Min_count, workers=Workers, iter=Iter)
     return model
 
-def train(xtrainsent,ytrainsent):
-    model = tf.keras.models.Sequential()
-    model.add(tf.keras.layers.LSTM(BatchSize, input_shape=(xtrainsent.shape[1], xtrainsent.shape[2])))
-    # model.add(tf.keras.layers.Dropout(0.5))
-    # model.add(tf.keras.layers.Dense(3, activation='softmax')) # Dense=>全连接层,输出维度=3
-    # model.add(tf.keras.layers.Activation('softmax'))
-    model.add(tf.keras.layers.Dense(ytrainsent.shape[1], activation='softmax'))
-    model.compile(loss='categorical_crossentropy', optimizer='adam', metrics=['accuracy'])
-    model.fit(xtrainsent, ytrainsent, epochs=10, batch_size=BatchSize, verbose=1)
-    # model.save('lstm.model')
-    # print(model.summary())
-    return model
 
 def splitdata(Data):
     # trainData = Data.head(13000)
@@ -96,11 +89,36 @@ def splitdata(Data):
     x_test = x_test.reshape((x_test.shape[0], x_test.shape[1], x_test.shape[2]))
     return x_train,Y_train,x_test,Y_test
 
+def train(xtrainsent,ytrainsent):
+    model = tf.keras.models.Sequential()
+    BiLSTMlayer=tf.keras.layers.Bidirectional( tf.keras.layers.LSTM(BatchSize, input_shape=(xtrainsent.shape[1], xtrainsent.shape[2])),merge_mode='concat')
+
+    # l_att = AttentionLSTM()(lstm)
+    model.add(BiLSTMlayer)
+
+    # 0.659
+    # model.add(tf.keras.layers.Dropout(0.2))
+    # model.add( tf.keras.layers.LSTM(BatchSize, input_shape=(xtrainsent.shape[1], xtrainsent.shape[2])))
+    # model.add(tf.keras.layers.Dropout(0.2))
+    # 0.64
+    model.add(tf.keras.layers.Dense(ytrainsent.shape[1], activation='softmax'))
+    model.compile(loss='categorical_crossentropy', optimizer='adam', metrics=['accuracy'])
+    model.fit(xtrainsent, ytrainsent, epochs=10, batch_size=BatchSize, verbose=1)
+    # model.save('lstm.model')
+    # print(model.summary())
+    return model
+
 print("数据读入:")
-readData = pd.read_csv('sentiment140/train16.csv', sep=',')
-# Data=Data.head(7000)+Data.tail(7000)
-Data=pd.concat([readData.head(2000),readData.tail(2000)])
+Data = pd.read_csv('data/sentiment140/train16.csv', sep=',')
+totalsize = Data.__len__()
+halfsize=int(trainsize/2)
+splitdt1 = Data[0:halfsize]
+splitdt2 = Data[totalsize-halfsize:totalsize]
+Data=pd.concat([splitdt1,splitdt2])
+splitdt1=[]
+splitdt2=[]
 print(Data.__len__())
+# print(Data["label"])
 
 sentenceLen = getsentenceLen(Data["text"])
 # print(sentenceLen)
@@ -108,9 +126,10 @@ print("去除停用词:")
 Data["text"] = Data["text"].apply(lambda x: rmStopwords(x))
 
 # print(Data["label"])
-print("Word2vec:")
+print("Word2vecTrain:")
 wvmodel = trainW2V(Data["text"], Sg, Size, Window, Min_count, Workers, Iter)
 
+print("Word2vecTransform:")
 Data["text"] = Data["text"].apply(lambda x: W2V(x,wvmodel))
 #
 Data["label"]=Data["label"].replace(0, 0)
